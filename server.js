@@ -51,4 +51,66 @@ io.sockets.on('connection', function(socket) {
   socket.on('disconnect',function(socket){
     log('A website disconnected from the server');
   });
+
+// Join room command.
+// Input: room, username.
+// Success Output: result, room, username, membership total.
+// Failure Output: result, message
+  socket.on('join_room',function(payload){
+    log('Server received a command', 'join_room', payload);
+    if('undefined' == typeof payload || !payload){
+      var errorMessage = 'join_room had no payload, command aborted';
+      log(errorMessage);
+      socket.emit('join_room_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+    var room = payload.room;
+    if('undefined' == typeof payload || !payload){
+      var errorMessage = 'join_room did not specify a room, command aborted';
+      log(errorMessage);
+      socket.emit('join_room_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+
+    var username = payload.username;
+    if('undefined' == typeof username || !username){
+      var errorMessage = 'join_room did not specify a username, command aborted';
+      log(errorMessage);
+      socket.emit('join_room_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+
+    socket.join(room);
+
+    var roomObject = io.sockets.adapter.rooms[room];
+    if('undefined' == typeof roomObject || !roomObject){
+      var errorMessage = 'join_room could not create a room (internal error), command aborted';
+      log(errorMessage);
+      socket.emit('join_room_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+
+    var numClients = roomObject.length;
+    var successData = {
+      result: 'success',
+      room: room,
+      username: username,
+      membership: (numClients + 1)
+    };
+    io.sockets.in(room).emit('join_room_response', successData);
+    log('Room:' + room + ' was just joined by ' + username);
+
+  });
 });
