@@ -2,6 +2,7 @@
 
 
 // Returns the value associated with the given parameter on the URL
+// Used for getting usernames from inputs
 function getURLParams(param)
 {
   var pageURL = window.location.search.substring(1);
@@ -21,13 +22,28 @@ if(typeof username == 'undefined' || !username)
   username = 'Anonymous_'+ Math.floor(Math.random() * 1000);
 }
 
-$('#messages').append('<h4>' + username + '</h4>');
-
-
-
 // Connect to the socket server
 var socket = io.connect();
 
 socket.on('log', function(array) {
   console.log.apply(console,array);
+});
+
+socket.on('join_room_response', function(payload){
+  if(payload.result == 'fail'){
+    alert(payload.message);
+    return;
+  }
+  $('#messages').append('<p>New User Joined The Room. ' + payload.username + '</p>');
+});
+
+// Chat stuff
+var chatRoom = 'oneRoom';
+$(function(){
+  var payload = {};
+  payload.room = chatRoom;
+  payload.username = username;
+
+  console.log('*** Client Log Message: \'join room\' payload: ' + JSON.stringify(payload));
+  socket.emit('join_room',payload);
 });
