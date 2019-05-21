@@ -39,6 +39,25 @@ socket.on('join_room_response', function(payload){
 
 // Chat stuff
 var chatRoom = 'oneRoom';
+
+socket.on('send_message_response', function(payload){
+  if(payload.result == 'fail'){
+    alert(payload.message);
+    return;
+  }
+  $('#messages').append('<p><b>' + payload.username + ':</b> ' + payload.message + '</p>');
+});
+
+function send_message()
+{
+  var payload = {};
+  payload.room = chatRoom;
+  payload.username = username;
+  payload.message = $('#send_message_holder').val();
+  console.log('*** Client Log Message: \'send_message\' payload: ' + JSON.stringify(payload));
+  socket.emit('send_message',payload);
+}
+
 $(function(){
   var payload = {};
   payload.room = chatRoom;

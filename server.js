@@ -68,7 +68,7 @@ io.sockets.on('connection', function(socket) {
         return;
     }
     var room = payload.room;
-    if('undefined' == typeof payload || !payload){
+    if('undefined' == typeof room || !room){
       var errorMessage = 'join_room did not specify a room, command aborted';
       log(errorMessage);
       socket.emit('join_room_response',{
@@ -110,7 +110,69 @@ io.sockets.on('connection', function(socket) {
       membership: (numClients + 1)
     };
     io.sockets.in(room).emit('join_room_response', successData);
-    log('Room:' + room + ' was just joined by ' + username);
+    log('\tRoom: ' + room + '\n\tJoined by: ' + username);
 
   });
+
+
+  // Send Message command.
+  // Input: room, username, message.
+  // Success Output: result, username, message.
+  // Failure Output: result, message.
+  socket.on('send_message',function(payload){
+    log('Server received a command', 'send_message', payload);
+    if('undefined' == typeof payload || !payload){
+      var errorMessage = 'send_message had no payload, command aborted';
+      log(errorMessage);
+      socket.emit('send_message_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+
+    var room = payload.room;
+    if('undefined' == typeof room || !room){
+      var errorMessage = 'send_message did not specify a room, command aborted';
+      log(errorMessage);
+      socket.emit('send_message_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+
+    var username = payload.username;
+    if('undefined' == typeof username || !username){
+      var errorMessage = 'send_message did not specify a username, command aborted';
+      log(errorMessage);
+      socket.emit('send_message_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+
+    var message = payload.message;
+    if('undefined' == typeof message || !message){
+      var errorMessage = 'send_message did not specify a username, command aborted';
+      log(errorMessage);
+      socket.emit('send_message_response',{
+        result: 'fail',
+        message: errorMessage
+        });
+        return;
+    }
+
+    var successData = {
+      result: 'success',
+      room: room,
+      username: username,
+      message: message
+    };
+    io.sockets.in(room).emit('send_message_response', successData);
+    log('Message sent to ' + room + ' by ' + username);
+  });
+
+//Close tags
 });
