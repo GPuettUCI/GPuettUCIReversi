@@ -33,6 +33,11 @@ console.log("Running on port: " + port);
 
 
 // Set up the web socket Server
+
+//Registry of socket id's and player info
+var players = [];
+
+
 var io = require('socket.io').listen(app);
 io.sockets.on('connection', function(socket) {
 
@@ -46,18 +51,16 @@ io.sockets.on('connection', function(socket) {
     socket.emit('log', array);
     socket.broadcast.emit('log', array);
   }
-  log('A website connected to the server');
-
-  socket.on('disconnect',function(socket){
-    log('A website disconnected from the server');
-  });
+  log('Client connection by: ' + socket.id);
 
 // Join room command.
 // Input: room, username.
-// Success Output: result, room, username, membership total.
+// Success Output: result, room, username, socket id, membership total.
 // Failure Output: result, message
   socket.on('join_room',function(payload){
-    log('Server received a command', 'join_room', payload);
+    log('Join Room command: ' + JSON.stringify(payload));
+
+    //Check if client has a payload
     if('undefined' == typeof payload || !payload){
       var errorMessage = 'join_room had no payload, command aborted';
       log(errorMessage);
@@ -67,7 +70,9 @@ io.sockets.on('connection', function(socket) {
         });
         return;
     }
+
     var room = payload.room;
+    //Check that payload has a room
     if('undefined' == typeof room || !room){
       var errorMessage = 'join_room did not specify a room, command aborted';
       log(errorMessage);
@@ -79,6 +84,7 @@ io.sockets.on('connection', function(socket) {
     }
 
     var username = payload.username;
+    //Check that username has been provided
     if('undefined' == typeof username || !username){
       var errorMessage = 'join_room did not specify a username, command aborted';
       log(errorMessage);
@@ -89,31 +95,60 @@ io.sockets.on('connection', function(socket) {
         return;
     }
 
+    //Store info for new player
+    players[socket.id] = {}
+    players[socket.id].username = username
+    players[socket.id].room = room
+
+    //Join room
     socket.join(room);
 
+    //Get room object
     var roomObject = io.sockets.adapter.rooms[room];
-    if('undefined' == typeof roomObject || !roomObject){
-      var errorMessage = 'join_room could not create a room (internal error), command aborted';
-      log(errorMessage);
-      socket.emit('join_room_response',{
-        result: 'fail',
-        message: errorMessage
-        });
-        return;
-    }
 
+    // Tell all current users that someone just joined
     var numClients = roomObject.length;
     var successData = {
       result: 'success',
       room: room,
       username: username,
-      membership: (numClients + 1)
+      socket_id: socket.id,
+      membership: numClients
     };
-    io.sockets.in(room).emit('join_room_response', successData);
-    log('\tRoom: ' + room + '\n\tJoined by: ' + username);
+    //tell room that someone just joined
+    io.in(room).emit('join_room_response', successData);
+
+    // tell new joiner who is in room
+    for(var socketInRoom in roomObject.sockets){
+      var successData = {
+        result: 'success',
+        room: room,
+        username: players[socketInRoom].username,
+        socket_id: socketInRoom,
+        membership: numClients
+      };
+      socket.emit('join_room_response', successData);
+    }
+
+    log('Join room success');
 
   });
 
+//Disconnect command
+  socket.on('disconnect',function(socket){
+    log('Client disconnected: ' + JSON.stringify(players[socket.id]));
+    if(typeof players[socket.id] == 'undefined' && players[socket.id])
+    {
+      var username = players[socket.id].username;
+      var room = players[socket.id].room;
+      var payload = {
+        username: username,
+        socket_id: socket.id
+      };
+      delete players[socket.id];
+      io.in(room).emit('player_disonnected', payload);
+    }
+  });
 
   // Send Message command.
   // Input: room, username, message.
