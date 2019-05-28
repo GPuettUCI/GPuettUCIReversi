@@ -96,9 +96,10 @@ io.sockets.on('connection', function(socket) {
     }
 
     //Store info for new player
-    players[socket.id] = {}
-    players[socket.id].username = username
-    players[socket.id].room = room
+    players[socket.id] = {};
+    players[socket.id].username = username;
+    players[socket.id].room = room;
+
 
     //Join room
     socket.join(room);
@@ -115,6 +116,7 @@ io.sockets.on('connection', function(socket) {
       socket_id: socket.id,
       membership: numClients
     };
+    log(successData);
     //tell room that someone just joined
     io.in(room).emit('join_room_response', successData);
 
@@ -135,9 +137,9 @@ io.sockets.on('connection', function(socket) {
   });
 
 //Disconnect command
-  socket.on('disconnect',function(socket){
+  socket.on('disconnect', function(){
     log('Client disconnected: ' + JSON.stringify(players[socket.id]));
-    if(typeof players[socket.id] == 'undefined' && players[socket.id])
+    if(typeof players[socket.id] !== 'undefined' && players[socket.id])
     {
       var username = players[socket.id].username;
       var room = players[socket.id].room;
