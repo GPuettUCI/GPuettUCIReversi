@@ -244,8 +244,10 @@ var oldBoard = [
   ['?', '?', '?', '?', '?', '?', '?', '?']
 ]
 
+var myColor = ' ';
 socket.on('game_update', function(payload) {
   console.log('*** Client Log Message: game_update: payload: ' + JSON.stringify(payload));
+
 
   //Check for good board Update
   if (payload.result == 'fail') {
@@ -255,6 +257,7 @@ socket.on('game_update', function(payload) {
     return;
   }
 
+
   //Check for a good board in payload
   var board = payload.game.board;
   if (typeof board == 'undefined' || !board) {
@@ -262,7 +265,18 @@ socket.on('game_update', function(payload) {
     return;
   }
 
+
   //Update my my_color
+  if (socket.id == payload.game.playerWhite.socket) {
+    myColor = 'white';
+  } else if (socket.id == payload.game.playerBlack.socket) {
+    myColor = 'black';
+  } else {
+    //Edge case catch. Return client to lobby.
+    window.location.href = 'lobby.html?username=' + username;
+  }
+  $('#my_color').html('<h3 id="my_color">I am ' + myColor + '</h3>');
+
 
   //Animate changes to board.
   var row;
@@ -290,14 +304,48 @@ socket.on('game_update', function(payload) {
           $('#' + row + '_' + col).html('<img src="assets/images/whiteToBlack.gif" alt="Black square" />');
         } else {
           $('#' + row + '_' + col).html('<img src="assets/images/error.gif" alt="Error" />');
+        } //end inner if/else chain
+
+        //Allow interactivity
+        $('#' + row + '_' + col).off('click');
+        if (board[row][col] == ' ') {
+          $('#' + row + '_' + col).addClass('hovered_over');
+          $('#' + row + '_' + col).click(function(r, c) {
+            return function() {
+              var payload = {};
+              payload.row = r;
+              payload.column = c;
+              payload.color = myColor;
+              console.log('*** Client log message: play token: payload: ' + JSON.stringify(payload));
+              socket.emit('play_token', payload);
+            };
+          }(row, col));
+        } //end if(board[row][col] == ' ')
+        else {
+          $('#' + row + '_' + col).removeClass('hovered_over');
         }
-      }
-    }//End inner for
-  }//End Outer for
+
+      } //end outer if
+    } //End inner for
+  } //End Outer for
 
   old_board = board;
 
-}); //end Gameplay
+}); //end game_update
+
+
+socket.on('play_token_response', function(payload) {
+  console.log('*** Client Log Message: play_token_response: payload: ' + JSON.stringify(payload));
+
+  //Check for good play_token_response
+  if (payload.result == 'fail') {
+    console.log(payload.message);
+    alert(payload.message)
+    return;
+  }
+
+});//end play_token_response
+// END GAMEPLAY //
 
 ///////////////////
 //// Functions ////
