@@ -149,6 +149,11 @@ io.sockets.on('connection', function(socket) {
 
     log('Join room success');
 
+
+    if(room !== 'lobby'){
+      sendGameUpdate(socket, room, 'initial update')
+    }
+
   });
 
   ////////////////
@@ -436,11 +441,11 @@ io.sockets.on('connection', function(socket) {
     }
 
     // if everything is ok, respond with success
-    var game_ID = Math.floor((1+Math.random()) * 0x10000).toString(16).substring(1);
+    var game_id = Math.floor((1+Math.random()) * 0x10000).toString(16).substring(1);
     var successData = {
       result: 'success',
       socket_id: requested_user,
-      game_id: game_ID
+      game_id: game_id
     };
     socket.emit('game_start_response', successData);
 
@@ -448,7 +453,7 @@ io.sockets.on('connection', function(socket) {
     var successData2 = {
       result: 'success',
       socket_id: socket.id,
-      game_id: game_ID
+      game_id: game_id
     };
     socket.to(requested_user).emit('game_start_response', successData2);
 
@@ -463,5 +468,69 @@ io.sockets.on('connection', function(socket) {
 
 
 
-  //Close tags
+  //Close tags for socket
 });
+
+
+/////////////////////
+// Game State Code //
+/////////////////////
+var games = [];
+
+
+//////////////////////////////
+// Create new Game Function //
+//////////////////////////////
+function createNewGame(){
+  var newGame = {};
+  newGame.playerWhite = {};
+  newGame.playerBlack = {};
+  newGame.playerWhite.socket = '';
+  newGame.playerWhite.username = '';
+  newGame.playerBlack.socket = '';
+  newGame.playerBlack.username = '';
+
+  var date = new Date();
+  newGame.lastMoveTime = date.getTime();
+
+  newGame.currentTurn = 'white';
+
+  newGame.board = [
+    [' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ','w','b',' ',' ',' '],
+    [' ',' ',' ','b','w',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' '],
+    [' ',' ',' ',' ',' ',' ',' ',' ']
+  ];
+
+  return newGame;
+}//end createNewGame()
+
+///////////////////////////////
+// Send Game Update function //
+///////////////////////////////
+function sendGameUpdate(socket, game_id, message){
+    // Check to see if game exists
+    if(typeof games[game_id] == 'undefined' || !games[game_id]){
+      console.log('No game exists. Creating. \n' + game_id + ' for ' + socket.id);
+      games[game_id] = createNewGame();
+    }
+
+    // Make sure only 2 Players
+
+    // Assign socket a color
+
+    // Send game Update
+    var successData = {
+      result: 'success',
+      game: games[game_id],
+      message: message,
+      game_id: game_id
+    };
+    io.in(game_id).emit('game_update', successData);
+
+    // Check to see if game is over
+}// end sendGameUpdate()

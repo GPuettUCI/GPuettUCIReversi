@@ -175,7 +175,7 @@ socket.on('uninvite_response', function(payload) {
   }
   var newNode = makeInviteButton(payload.socket_id);
   $('.socket_' + payload.socket_id + ' button').replaceWith(newNode);
-});
+}); //End uninvite response
 
 // UnInvited response / revert to invite button
 socket.on('uninvited', function(payload) {
@@ -185,22 +185,13 @@ socket.on('uninvited', function(payload) {
   }
   var newNode = makeInviteButton(payload.socket_id);
   $('.socket_' + payload.socket_id + ' button').replaceWith(newNode);
-});
+}); //End uninvited
 
 
 
 ////////////////
 // Game Start //
 ////////////////
-
-// Game Start Function
-function gameStart(who) {
-  var payload = {};
-  payload.requested_user = who;
-  console.log('***Client Log message: Game start called: payload: ' + JSON.stringify(payload));
-
-  socket.emit('game_start', payload);
-}
 
 // Game Start response
 socket.on('game_start_response', function(payload) {
@@ -213,7 +204,7 @@ socket.on('game_start_response', function(payload) {
 
   //Go to new page
   window.location.href = 'game.html?username=' + username + '&game_id=' + payload.game_id;
-});
+}); //End Game Start Response
 
 
 //////////
@@ -236,22 +227,90 @@ socket.on('send_message_response', function(payload) {
   newNode.hide()
   $('#messages').append(newNode);
   newNode.slideDown(1000);
-});
+}); //End Send Message Response
 
 
+//////////////
+// Gameplay //
+//////////////
+var oldBoard = [
+  ['?', '?', '?', '?', '?', '?', '?', '?'],
+  ['?', '?', '?', '?', '?', '?', '?', '?'],
+  ['?', '?', '?', '?', '?', '?', '?', '?'],
+  ['?', '?', '?', '?', '?', '?', '?', '?'],
+  ['?', '?', '?', '?', '?', '?', '?', '?'],
+  ['?', '?', '?', '?', '?', '?', '?', '?'],
+  ['?', '?', '?', '?', '?', '?', '?', '?'],
+  ['?', '?', '?', '?', '?', '?', '?', '?']
+]
+
+socket.on('game_update', function(payload) {
+  console.log('*** Client Log Message: game_update: payload: ' + JSON.stringify(payload));
+
+  //Check for good board Update
+  if (payload.result == 'fail') {
+    console.log(payload.message);
+    window.location.href = 'lobby.html?username=' + username;
+    alert(payload.message);
+    return;
+  }
+
+  //Check for a good board in payload
+  var board = payload.game.board;
+  if (typeof board == 'undefined' || !board) {
+    console.log('Internal error: received a malformed board update from server');
+    return;
+  }
+
+  //Update my my_color
+
+  //Animate changes to board.
+  var row;
+  var col;
+  for (row = 0; row < 8; row++) {
+    for (col = 0; col < 8; col++) {
+      if (oldBoard[row][col] != board[row][col]) {
+        if (oldBoard[row][col] == '?' && board[row][col] == ' ') {
+          $('#' + row + '_' + col).html('<img src="assets/images/empty.gif" alt="Empty square" />');
+        } else if (oldBoard[row][col] == 'w' && board[row][col] == ' ') {
+          $('#' + row + '_' + col).html('<img src="assets/images/whiteToEmpty.gif" alt="Empty square" />');
+        } else if (oldBoard[row][col] == 'b' && board[row][col] == ' ') {
+          $('#' + row + '_' + col).html('<img src="assets/images/blackToEmpty.gif" alt="Empty square" />');
+        } else if (oldBoard[row][col] == '?' && board[row][col] == 'w') {
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToWhite.gif" alt="White square" />');
+        } else if (oldBoard[row][col] == ' ' && board[row][col] == 'w') {
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToWhite.gif" alt="White square" />');
+        } else if (oldBoard[row][col] == 'b' && board[row][col] == 'w') {
+          $('#' + row + '_' + col).html('<img src="assets/images/blackToWhite.gif" alt="White square" />');
+        } else if (oldBoard[row][col] == '?' && board[row][col] == 'b') {
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToBlack.gif" alt="Black square" />');
+        } else if (oldBoard[row][col] == ' ' && board[row][col] == 'b') {
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToBlack.gif" alt="Black square" />');
+        } else if (oldBoard[row][col] == 'w' && board[row][col] == 'b') {
+          $('#' + row + '_' + col).html('<img src="assets/images/whiteToBlack.gif" alt="Black square" />');
+        } else {
+          $('#' + row + '_' + col).html('<img src="assets/images/error.gif" alt="Error" />');
+        }
+      }
+    }//End inner for
+  }//End Outer for
+
+  old_board = board;
+
+}); //end Gameplay
 
 ///////////////////
 //// Functions ////
 ///////////////////
 
-// Send message Function
-function send_message() {
+// Send message Function (called on submit by lobby and game.html)
+function sendMessage() {
   var payload = {};
   payload.room = chatRoom;
   payload.message = $('#send_message_holder').val();
-  console.log('*** Client Log Message: \'send_message\' payload: ' + JSON.stringify(payload));
+  console.log('*** Client Log Message: send_message: payload: ' + JSON.stringify(payload));
   socket.emit('send_message', payload);
-}
+} //End sendMessage()
 
 function makeInviteButton(socket_id) {
   var newHTML = '<button type= \'button\' class=\'btn btn-outline-primary\'>Invite</button>';
@@ -260,7 +319,7 @@ function makeInviteButton(socket_id) {
     invite(socket_id);
   });
   return (newNode);
-}
+} //End makeInviteButton(socket_id)
 
 function makeInvitedButton(socket_id) {
   var newHTML = '<button type= \'button\' class=\'btn btn-primary\'>Invited</button>';
@@ -269,7 +328,7 @@ function makeInvitedButton(socket_id) {
     uninvite(socket_id);
   });
   return (newNode);
-}
+} //End makeInvitedButton(socket_id)
 
 function makePlayButton(socket_id) {
   var newHTML = '<button type= \'button\' class=\'btn btn-success\'>Play</button>';
@@ -278,13 +337,22 @@ function makePlayButton(socket_id) {
     gameStart(socket_id);
   });
   return (newNode);
-}
+} //End makePlayButton(socket_id)
 
 function makeEngagedButton() {
   var newHTML = '<button type= \'button\' class=\'btn btn-danger\'>Engaged</button>';
   var newNode = $(newHTML);
   return (newNode);
-}
+} //End makeEngagedButton()
+
+// Game Start Function
+function gameStart(who) {
+  var payload = {};
+  payload.requested_user = who;
+  console.log('***Client Log message: Game start called: payload: ' + JSON.stringify(payload));
+
+  socket.emit('game_start', payload);
+} // end gameStart(who)
 
 $(function() {
   var payload = {};
@@ -293,4 +361,4 @@ $(function() {
 
   console.log('*** Client Log Message: \'join room\' payload: ' + JSON.stringify(payload));
   socket.emit('join_room', payload);
-});
+}); //end function()
