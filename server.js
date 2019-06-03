@@ -1,14 +1,16 @@
-// Static file webserver library
-var static = require('node-static');
+//////////////
+// Requires //
+//////////////
 
+// Static file webserver library
 // http server library
+var static = require('node-static');
 var http = require('http');
 
-// Assume running on Heroku
+// For Heroku
 var port = process.env.PORT;
 var directory = __dirname + '/public';
-
-// If not on heroku, readjust port and dir info
+// Readjust port and dir info for local
 if (typeof port == "undefined" || !port) {
   directory = './public';
   port = 8080;
@@ -31,15 +33,26 @@ var app = http.createServer(
 console.log("Running on port: " + port);
 
 
-// Set up the web socket Server
-
-//Registry of socket id's and player info
+/////////////////////
+// Player registry //
+/////////////////////
 var players = [];
 
-
+///////////////////////
+// Web Socket Server //
+///////////////////////
+// Set up
 var io = require('socket.io').listen(app);
+
+
+//////////////////////////
+// Socket communication //
+//////////////////////////
 io.sockets.on('connection', function(socket) {
 
+  //////////////////
+  // Log Function //
+  //////////////////
   function log() {
     var array = ['*** Sever Log Message: '];
     for (var i = 0; i < arguments.length; i++) {
@@ -49,9 +62,13 @@ io.sockets.on('connection', function(socket) {
     socket.emit('log', array);
     socket.broadcast.emit('log', array);
   }
+
+
   log('Client connection by: ' + socket.id);
 
-  // Join room command.
+  ///////////////
+  // Join Room //
+  ///////////////
   // Input: room, username.
   // Success Output: result, room, username, socket id, membership total.
   // Failure Output: result, message
@@ -114,6 +131,7 @@ io.sockets.on('connection', function(socket) {
       membership: numClients
     };
     log(successData);
+
     //tell room that someone just joined
     io.in(room).emit('join_room_response', successData);
 
@@ -133,7 +151,12 @@ io.sockets.on('connection', function(socket) {
 
   });
 
-  //Disconnect command
+  ////////////////
+  // Disconnect //
+  ////////////////
+  // Input: N/A
+  // Success Output: username, socket id.
+  // Failure Output: N/A
   socket.on('disconnect', function() {
     log('Client disconnected: ' + JSON.stringify(players[socket.id]));
     if (typeof players[socket.id] != 'undefined' && players[socket.id]) {
@@ -148,8 +171,12 @@ io.sockets.on('connection', function(socket) {
     }
   });
 
-  // Send Message command.
-  // Input: room, username, message.
+
+
+  //////////////////
+  // Send Message //
+  //////////////////
+  // Input: room, message.
   // Success Output: result, username, message.
   // Failure Output: result, message.
   socket.on('send_message', function(payload) {
@@ -175,7 +202,7 @@ io.sockets.on('connection', function(socket) {
       return;
     }
 
-    var username = payload.username;
+    var username = players[socket.id].username;
     if ('undefined' == typeof username || !username) {
       var errorMessage = 'send_message did not specify a username, command aborted';
       log(errorMessage);
@@ -203,13 +230,14 @@ io.sockets.on('connection', function(socket) {
       username: username,
       message: message
     };
-    io.sockets.in(room).emit('send_message_response', successData);
+    io.in(room).emit('send_message_response', successData);
     log('Message sent to ' + room + ' by ' + username);
   });
 
 
-
-  // Invite command.
+  ////////////
+  // Invite //
+  ////////////
   // Input: requested user.
   // Success Output invite: result, socket id of requested user.
   // Success Output invited: result, socket id of requested user.
@@ -240,7 +268,7 @@ io.sockets.on('connection', function(socket) {
 
     var requested_user = payload.requested_user;
     if (typeof requested_user == 'undefined' || !requested_user) {
-      var errorMessage = 'invite did not specify a username, command aborted';
+      var errorMessage = 'invite did not specify a requested user, command aborted';
       log(errorMessage);
       socket.emit('invite_response', {
         result: 'fail',
@@ -280,7 +308,10 @@ io.sockets.on('connection', function(socket) {
 
   });
 
-  // Uninvite command.
+
+  //////////////
+  // Uninvite //
+  //////////////
   // Input: requested user.
   // Success Output invite: result, socket id of the uninvited.
   // Success Output invited: result, socket id of uninviter.
@@ -311,7 +342,7 @@ io.sockets.on('connection', function(socket) {
 
     var requested_user = payload.requested_user;
     if (typeof requested_user == 'undefined' || !requested_user) {
-      var errorMessage = 'uninvite did not specify a username, command aborted';
+      var errorMessage = 'uninvite did not specify a requested user, command aborted';
       log(errorMessage);
       socket.emit('uninvite_response', {
         result: 'fail',
@@ -323,7 +354,7 @@ io.sockets.on('connection', function(socket) {
     var room = players[socket.id].room;
     var roomObj = io.sockets.adapter.rooms[room];
 
-    // Ensure user that is being invited is in the room
+    // Ensure user that is being uninvited is in the room
     if (!roomObj.sockets.hasOwnProperty(requested_user)) {
       var errorMessage = 'uninvite requested a user that is not in the room, command aborted';
       log(errorMessage);
@@ -334,7 +365,6 @@ io.sockets.on('connection', function(socket) {
     }
 
     // if everything is ok, respond with success
-
     var successData = {
       result: 'success',
       socket_id: requested_user
@@ -350,6 +380,88 @@ io.sockets.on('connection', function(socket) {
     log('unInnvite successful')
 
   });
+
+  ////////////////
+  // Game Start //
+  ////////////////
+  // Input: requested user.
+  // Success Output invite: result, socket id of other player, game_id.
+  // Failure Output: result, message.
+  socket.on('game_start', function(payload) {
+    log('game start with ', JSON.stringify(payload));
+    if ('undefined' == typeof payload || !payload) {
+      var errorMessage = 'uninvite had no payload, command aborted';
+      log(errorMessage);
+      socket.emit('game_start_response', {
+        result: 'fail',
+        message: errorMessage
+      });
+      return;
+    }
+
+    var username = players[socket.id].username;
+    if (typeof username == 'undefined' || !username) {
+      var errorMessage = 'gameStart did not specify a username, command aborted';
+      log(errorMessage);
+      socket.emit('game_start_response', {
+        result: 'fail',
+        message: errorMessage
+      });
+      return;
+    }
+
+
+    var requested_user = payload.requested_user;
+    if (typeof requested_user == 'undefined' || !requested_user) {
+      var errorMessage = 'gameStart did not specify a requested user, command aborted';
+      log(errorMessage);
+      socket.emit('game_start_response', {
+        result: 'fail',
+        message: errorMessage
+      });
+      return;
+    }
+
+    var room = players[socket.id].room;
+    var roomObj = io.sockets.adapter.rooms[room];
+
+    // Ensure user that is being uninvited is in the room
+    if (!roomObj.sockets.hasOwnProperty(requested_user)) {
+      var errorMessage = 'gameStart requested a user that is not in the room, command aborted';
+      log(errorMessage);
+      socket.emit('gameStart_response', {
+        result: 'fail',
+        message: errorMessage
+      });
+    }
+
+    // if everything is ok, respond with success
+    var game_ID = Math.floor((1+Math.random()) * 0x10000).toString(16).substring(1);
+    var successData = {
+      result: 'success',
+      socket_id: requested_user,
+      game_id: game_ID
+    };
+    socket.emit('game_start_response', successData);
+
+    //Tell other player to play
+    var successData2 = {
+      result: 'success',
+      socket_id: socket.id,
+      game_id: game_ID
+    };
+    socket.to(requested_user).emit('game_start_response', successData2);
+
+    log('gameStart successful')
+
+  });
+
+
+
+
+
+
+
 
   //Close tags
 });

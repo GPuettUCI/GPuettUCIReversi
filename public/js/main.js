@@ -18,16 +18,22 @@ if (typeof username == 'undefined' || !username) {
   username = 'Anonymous_' + Math.floor(Math.random() * 1000);
 }
 
-// Connect to the socket server
+//////////////////////////////////
+// Connect to the socket server //
+//////////////////////////////////
 var socket = io.connect();
 
-// Called when server sends a log message.
+
+////////////////////////
+// Server Log Message //
+////////////////////////
 socket.on('log', function(array) {
   console.log.apply(console, array);
 });
 
-
-// Called when server responds that someone joined a room.
+////////////////////////
+// Join Room Response //
+////////////////////////
 socket.on('join_room_response', function(payload) {
   if (payload.result == 'fail') {
     alert(payload.message);
@@ -67,6 +73,7 @@ socket.on('join_room_response', function(payload) {
     node2.slideDown(1000);
     node3.slideDown(1000);
   } else {
+    uninvite(payload.socket_id);
     var button3 = makeInviteButton(payload.socket_id);
     $('.socket_' + payload.socket_id + ' button').replaceWith(button3);
     domElements.slideDown(1000);
@@ -81,7 +88,9 @@ socket.on('join_room_response', function(payload) {
   newNode.slideDown(1000);
 });
 
-// Called when server responds that someone leaves a room.
+/////////////////////////
+// Disconnect Response //
+/////////////////////////
 socket.on('player_disonnected', function(payload) {
   if (payload.result == 'fail') {
     alert(payload.message);
@@ -107,7 +116,13 @@ socket.on('player_disonnected', function(payload) {
   newNode.slideDown(1000);
 });
 
-//invitation Function
+
+
+//////////////
+// Inviting //
+//////////////
+
+// Invite Function
 function invite(who) {
   var payload = {};
   payload.requested_user = who;
@@ -132,9 +147,16 @@ socket.on('invited', function(payload) {
     alert(payload.message);
     return;
   }
-  var newNode = makePlayButton();
+  var newNode = makePlayButton(payload.socket_id);
   $('.socket_' + payload.socket_id + ' button').replaceWith(newNode);
 });
+
+
+
+
+////////////////
+// Uninviting //
+////////////////
 
 // Uninvite Function
 function uninvite(who) {
@@ -167,25 +189,65 @@ socket.on('uninvited', function(payload) {
 
 
 
+////////////////
+// Game Start //
+////////////////
 
-// Chat stuff
+// Game Start Function
+function gameStart(who) {
+  var payload = {};
+  payload.requested_user = who;
+  console.log('***Client Log message: Game start called: payload: ' + JSON.stringify(payload));
+
+  socket.emit('game_start', payload);
+}
+
+// Game Start response
+socket.on('game_start_response', function(payload) {
+  if (payload.result == 'fail') {
+    alert(payload.message);
+    return;
+  }
+  var newNode = makeEngagedButton(payload.socket_id);
+  $('.socket_' + payload.socket_id + ' button').replaceWith(newNode);
+
+  //Go to new page
+  window.location.href = 'game.html?username=' + username + '&game_id=' + payload.game_id;
+});
+
+
+//////////
+// Chat //
+//////////
+
 var chatRoom = getURLParams('game_id');
 if (typeof chatRoom == 'undefined' || !chatRoom) {
   chatRoom = 'lobby';
 }
 
+// Send Message Response
 socket.on('send_message_response', function(payload) {
   if (payload.result == 'fail') {
     alert(payload.message);
     return;
   }
-  $('#messages').append('<p><b>' + payload.username + ':</b> ' + payload.message + '</p>');
+  var newHTML = '<p><b>' + payload.username + ':</b> ' + payload.message + '</p>';
+  var newNode = $(newHTML);
+  newNode.hide()
+  $('#messages').append(newNode);
+  newNode.slideDown(1000);
 });
 
+
+
+///////////////////
+//// Functions ////
+///////////////////
+
+// Send message Function
 function send_message() {
   var payload = {};
   payload.room = chatRoom;
-  payload.username = username;
   payload.message = $('#send_message_holder').val();
   console.log('*** Client Log Message: \'send_message\' payload: ' + JSON.stringify(payload));
   socket.emit('send_message', payload);
@@ -209,13 +271,16 @@ function makeInvitedButton(socket_id) {
   return (newNode);
 }
 
-function makePlayButton() {
+function makePlayButton(socket_id) {
   var newHTML = '<button type= \'button\' class=\'btn btn-success\'>Play</button>';
   var newNode = $(newHTML);
+  newNode.click(function() {
+    gameStart(socket_id);
+  });
   return (newNode);
 }
 
-function makeEngageButton() {
+function makeEngagedButton() {
   var newHTML = '<button type= \'button\' class=\'btn btn-danger\'>Engaged</button>';
   var newNode = $(newHTML);
   return (newNode);
