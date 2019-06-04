@@ -81,10 +81,10 @@ socket.on('join_room_response', function(payload) {
 
 
   // New player Join Message
-  var newHTML = '<p><b>' + payload.username + '</b> has entered the lobby</p>';
+  var newHTML = '<p><b>' + payload.username + '</b> has entered the room</p>';
   var newNode = $(newHTML);
   newNode.hide();
-  $('#messages').append(newNode);
+  $('#messages').prepend(newNode);
   newNode.slideDown(1000);
 });
 
@@ -225,7 +225,7 @@ socket.on('send_message_response', function(payload) {
   var newHTML = '<p><b>' + payload.username + ':</b> ' + payload.message + '</p>';
   var newNode = $(newHTML);
   newNode.hide()
-  $('#messages').append(newNode);
+  $('#messages').prepend(newNode);
   newNode.slideDown(1000);
 }); //End Send Message Response
 
@@ -279,10 +279,19 @@ socket.on('game_update', function(payload) {
 
 
   //Animate changes to board.
+  var whiteTotal = 0;
+  var blackTotal = 0;
   var row;
   var col;
   for (row = 0; row < 8; row++) {
     for (col = 0; col < 8; col++) {
+      if (board[row][col] == 'w') {
+        whiteTotal++;
+      }
+      if (board[row][col] == 'b') {
+        blackTotal++;
+      }
+
       if (oldBoard[row][col] != board[row][col]) {
         if (oldBoard[row][col] == '?' && board[row][col] == ' ') {
           $('#' + row + '_' + col).html('<img src="assets/images/empty.gif" alt="Empty square" />');
@@ -325,9 +334,12 @@ socket.on('game_update', function(payload) {
           $('#' + row + '_' + col).removeClass('hovered_over');
         }
 
-      } //end outer if
-    } //End inner for
-  } //End Outer for
+      } //end old vs new compare
+    } //End column for loop
+  } //End row for loop
+
+  $('#whiteTotal').html(whiteTotal);
+  $('#blackTotal').html(blackTotal);
 
   old_board = board;
 
@@ -340,11 +352,25 @@ socket.on('play_token_response', function(payload) {
   //Check for good play_token_response
   if (payload.result == 'fail') {
     console.log(payload.message);
-    alert(payload.message)
+    alert(payload.message);
     return;
   }
 
-});//end play_token_response
+}); //end play_token_response
+
+socket.on('game_over', function(payload) {
+  console.log('*** Client Log Message: Game over message: payload: ' + JSON.stringify(payload));
+
+  //Check for good game over message
+  if (payload.result == 'fail') {
+    console.log(payload.message);
+    return;
+  }
+
+  //Jump to a new page
+  $('#game_over').html('<h1>Game Over</h1><h2>' + payload.whoWon + ' wins</h2>');
+  $('#game_over').append('<a href="lobby.html?username=' + username + '" class = "btn btn-success btn-lg active" role = "button" aria-pressed = "true">Lobby</a>');
+}); //end game_over
 // END GAMEPLAY //
 
 ///////////////////
@@ -358,6 +384,7 @@ function sendMessage() {
   payload.message = $('#send_message_holder').val();
   console.log('*** Client Log Message: send_message: payload: ' + JSON.stringify(payload));
   socket.emit('send_message', payload);
+  $('#send_message_holder').val('');
 } //End sendMessage()
 
 function makeInviteButton(socket_id) {
@@ -409,4 +436,6 @@ $(function() {
 
   console.log('*** Client Log Message: \'join room\' payload: ' + JSON.stringify(payload));
   socket.emit('join_room', payload);
+
+  $('#quit').append('<a href="lobby.html?username=' + username + '" class = "btn btn-danger btn-lg active" role = "button" aria-pressed = "true">Quit</a>');
 }); //end function()

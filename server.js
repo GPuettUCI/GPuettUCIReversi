@@ -502,7 +502,7 @@ io.sockets.on('connection', function(socket) {
       return;
     }
 
-    var gameId = players[socket.id].room;
+    var gameID = players[socket.id].room;
     if (typeof gameID == 'undefined' || !gameID) {
       var errorMessage = 'play token unable to find game board';
       log(errorMessage);
@@ -536,7 +536,7 @@ io.sockets.on('connection', function(socket) {
     }
 
     var color = payload.color;
-    if (typeof color == 'undefined' || !color || color != 'white' || color != 'black') {
+    if (typeof color == 'undefined' || !color || (color != 'white' && color != 'black')) {
       var errorMessage = 'play token did not specity a valid color, command aborted';
       log(errorMessage);
       socket.emit('play_toekn_response', {
@@ -546,7 +546,7 @@ io.sockets.on('connection', function(socket) {
       return;
     }
 
-    var game = games[game_id];
+    var game = games[gameID];
     if (typeof game == 'undefined' || !game) {
       var errorMessage = 'play token could not find your game, command aborted';
       log(errorMessage);
@@ -563,10 +563,10 @@ io.sockets.on('connection', function(socket) {
     socket.emit('play_token_response', successData);
 
     //Execute the move
-    if(color == 'white'){
+    if (color == 'white') {
       game.board[row][col] = 'w';
       game.currentTurn = 'black';
-    } else if(color == 'black'){
+    } else if (color == 'black') {
       game.board[row][col] = 'b';
       game.currentTurn = 'white';
     }
@@ -576,7 +576,7 @@ io.sockets.on('connection', function(socket) {
 
     sendGameUpdate(socket, gameID, 'played a token');
 
-  });// Play token close tags
+  }); // Play token close tags
 
 
 }); //Close tags for socket
@@ -630,8 +630,55 @@ function sendGameUpdate(socket, game_id, message) {
   }
 
   // Make sure only 2 Players
+  var roomObj;
+  var numClients;
+  do {
+    roomObj = io.sockets.adapter.rooms[game_id];
+    numClients = roomObj.length;
+    if (numClients > 2) {
+      console.log('Too many clients in room: ' + '#' + numClients + '\tgame:' + game_id);
+      if (games[game_id].playerWhite.socket == roomObj.sockets[0]) {
+        games[game_id].playerWhite.socket = '';
+        games[game_id].playerWhite.username = '';
+      }
+      if (games[game_id].playerBlack.socket == roomObj.sockets[0]) {
+        games[game_id].playerBlack.socket = '';
+        games[game_id].playerBlack.username = '';
+      }
+      // Kick an extra.
+      var kicked = Object.keys(roomObject.sockets)[0];
+      io.of('/').connected[kicked].leave(game_id);
+    }
+  } //End Do loop
+  while ((numClients - 1) > 2);
 
   // Assign socket a color
+  if ((games[game_id].playerWhite.socket != socket.id) && (games[game_id].playerBlack.socket != socket.id)) {
+    console.log('Player : ' + socket.id + 'is not assigned an ID.');
+
+    //edge case
+    if ((games[game_id].playerBlack.socket != '') && (games[game_id].playerWhite.socket != '')) {
+      games[game_id].playerWhite.socket = '';
+      games[game_id].playerWhite.username = '';
+      games[game_id].playerBlack.socket = '';
+      games[game_id].playerBlack.username = '';
+    }
+  }
+
+  //Assign colors to the Players
+  if (games[game_id].playerWhite.socket == '') {
+    if (games[game_id].playerBlack.socket != socket.id) {
+      games[game_id].playerWhite.socket = socket.id;
+      games[game_id].playerWhite.username = players[socket.id].username;
+    }
+  }
+  if (games[game_id].playerBlack.socket == '') {
+    if (games[game_id].playerWhite.socket != socket.id) {
+      games[game_id].playerBlack.socket = socket.id;
+      games[game_id].playerBlack.username = players[socket.id].username;
+    }
+  }
+
 
   // Send game Update
   var successData = {
@@ -643,4 +690,34 @@ function sendGameUpdate(socket, game_id, message) {
   io.in(game_id).emit('game_update', successData);
 
   // Check to see if game is over
+  var row;
+  var col;
+  var count = 0;
+  for (row = 0; row < 8; row++) {
+    for (col = 0; col < 8; col++) {
+      if (games[game_id].board[row][col] != ' ') {
+        count++;
+      } //end if
+    } //End col for loop
+  } //End row for loop
+  if (count == 64) {
+    var successData = {
+      result: 'success',
+      game: games[game_id],
+      whoWon: 'everyone',
+      game_id: game_id
+    };
+
+    io.in(game_id).emit('game_over', successData);
+
+    //Delete old games after an hour.
+    setTimeout(function(id) {
+        return function() {
+          delete games[id];
+        }
+      }(game_id),
+      60 * 60 * 1000);
+  }
+
+
 } // end sendGameUpdate()
