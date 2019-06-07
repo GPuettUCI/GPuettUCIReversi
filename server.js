@@ -586,9 +586,11 @@ io.sockets.on('connection', function(socket) {
     if (color == 'white') {
       game.board[row][col] = 'w';
       game.currentTurn = 'black';
+      game.legalMoves = calculateValidMoves('b', game.board);
     } else if (color == 'black') {
       game.board[row][col] = 'b';
       game.currentTurn = 'white';
+      game.legalMoves = calculateValidMoves('w', game.board);
     }
 
     var date = new Date();
@@ -606,6 +608,108 @@ io.sockets.on('connection', function(socket) {
 // Game State Code //
 /////////////////////
 var games = [];
+
+
+///////////////////////////////
+// Check line Match Function //
+///////////////////////////////
+function checkLineMatch(player, changedRow, changedCol, row, col, board) {
+  var opposite;
+  var newRow = row + changedRow;
+  var newCol = col + changedCol;
+
+  if (board[row][col] === player) {
+    return true;
+  }
+  if ((newRow < 0) || (newRow > 7)) {
+    return false;
+  }
+  if ((newCol < 0) || (newCol > 7)) {
+    return false;
+  }
+
+  return checkLineMatch(player, changedRow, changedCol, newRow, newCol, board);
+} //end checkLineMatch()
+
+
+
+/////////////////////////////
+// Valid Move helper funct //
+/////////////////////////////
+function validMove(player, changedRow, changedCol, row, col, board) {
+  var opposite;
+  var newRow = row + changedRow;
+  var newCol = col + changedCol;
+  var oneRowPast = newRow + changedRow;
+  var oneColPast = newCol + changedCol;
+  if (player === 'b') {
+    opposite = 'w';
+  } else if (player === 'w') {
+    opposite = 'b';
+  } else {
+    log('color problem: ' + player)
+    return false;
+  }
+
+  if ((newRow < 0) || (newRow > 7)) {
+    return false;
+  }
+  if ((newCol < 0) || (newCol > 7)) {
+    return false;
+  }
+  if (board[newRow][newCol] != opposite) {
+    return false;
+  }
+  if ((oneRowPast < 0) || (oneRowPast > 7)) {
+    return false;
+  }
+  if ((oneColPast < 0) || (oneColPast > 7)) {
+    return false;
+  }
+  return checkLineMatch(player, changedRow, changedCol, newRow, newCol, board);
+
+} //end validMove()
+
+
+/////////////////////////////
+// Calculating Valid Moves //
+/////////////////////////////
+function calculateValidMoves(player, board) {
+
+  var valid = [
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
+    [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+  ];
+
+  for (var row = 0; row < 8; row++) {
+    for (var col = 0; col < 8; col++) {
+      if (board[row][col] === ' ') {
+        var nw = validMove(player, -1, -1, row, col, board); //North West
+        var nn = validMove(player, -1, 0, row, col, board); //North
+        var ne = validMove(player, -1, 1, row, col, board); //North East
+
+        var ee = validMove(player, 0, 1, row, col, board); //East
+
+        var se = validMove(player, 1, 1, row, col, board); //South East
+        var ss = validMove(player, 1, 0, row, col, board); //South
+        var sw = validMove(player, 1, -1, row, col, board); //South West
+
+        var ww = validMove(player, 0, -1, row, col, board); //West
+
+        if (nw || nn || ne || ee || se || ss || sw || ww) {
+          valid[row][col] = player;
+        }
+      }
+    }
+  }
+
+} //end calculateValidMoves
 
 
 //////////////////////////////
@@ -635,8 +739,12 @@ function createNewGame() {
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
   ];
 
+  newGame.legalMoves = calculateValidMoves('b', newGame.board);
+
   return newGame;
 } //end createNewGame()
+
+
 
 ///////////////////////////////
 // Send Game Update function //
