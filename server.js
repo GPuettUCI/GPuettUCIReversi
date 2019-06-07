@@ -506,7 +506,7 @@ io.sockets.on('connection', function(socket) {
     if (typeof gameID == 'undefined' || !gameID) {
       var errorMessage = 'play token unable to find game board';
       log(errorMessage);
-      socket.emit('play_toekn_response', {
+      socket.emit('play_token_response', {
         result: 'fail',
         message: errorMessage
       });
@@ -517,7 +517,7 @@ io.sockets.on('connection', function(socket) {
     if (typeof row == 'undefined' || row < 0 || row > 7) {
       var errorMessage = 'play token did not specity a valid row, command aborted';
       log(errorMessage);
-      socket.emit('play_toekn_response', {
+      socket.emit('play_token_response', {
         result: 'fail',
         message: errorMessage
       });
@@ -528,7 +528,7 @@ io.sockets.on('connection', function(socket) {
     if (typeof col == 'undefined' || col < 0 || col > 7) {
       var errorMessage = 'play token did not specity a valid column, command aborted';
       log(errorMessage);
-      socket.emit('play_toekn_response', {
+      socket.emit('play_token_response', {
         result: 'fail',
         message: errorMessage
       });
@@ -539,7 +539,7 @@ io.sockets.on('connection', function(socket) {
     if (typeof color == 'undefined' || !color || (color != 'white' && color != 'black')) {
       var errorMessage = 'play token did not specity a valid color, command aborted';
       log(errorMessage);
-      socket.emit('play_toekn_response', {
+      socket.emit('play_token_response', {
         result: 'fail',
         message: errorMessage
       });
@@ -549,6 +549,26 @@ io.sockets.on('connection', function(socket) {
     var game = games[gameID];
     if (typeof game == 'undefined' || !game) {
       var errorMessage = 'play token could not find your game, command aborted';
+      log(errorMessage);
+      socket.emit('play_token_response', {
+        result: 'fail',
+        message: errorMessage
+      });
+      return;
+    }
+
+    if (color !== game.currentTurn) {
+      var errorMessage = 'play_token played out of turn.';
+      log(errorMessage);
+      socket.emit('play_token_response', {
+        result: 'fail',
+        message: errorMessage
+      });
+      return;
+    }
+    if ((game.currentTurn === 'white' && game.playerWhite.socket !== socket.id) ||
+      (game.currentTurn === 'white' && game.playerWhite.socket !== socket.id)) {
+      var errorMessage = 'play_token played out of turn.';
       log(errorMessage);
       socket.emit('play_toekn_response', {
         result: 'fail',
@@ -592,6 +612,8 @@ var games = [];
 // Create new Game Function //
 //////////////////////////////
 function createNewGame() {
+  var date = new Date();
+
   var newGame = {};
   newGame.playerWhite = {};
   newGame.playerBlack = {};
@@ -599,11 +621,8 @@ function createNewGame() {
   newGame.playerWhite.username = '';
   newGame.playerBlack.socket = '';
   newGame.playerBlack.username = '';
-
-  var date = new Date();
   newGame.lastMoveTime = date.getTime();
-
-  newGame.currentTurn = 'white';
+  newGame.currentTurn = 'black';
 
   newGame.board = [
     [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '],
