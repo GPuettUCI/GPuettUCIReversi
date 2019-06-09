@@ -314,10 +314,13 @@ socket.on('game_update', function(payload) {
         } else {
           $('#' + row + '_' + col).html('<img src="assets/images/error.gif" alt="Error" />');
         } //end inner if/else chain
+      } //end old vs new compare
 
-        //Allow interactivity
-        $('#' + row + '_' + col).off('click');
-        if (board[row][col] == ' ') {
+      //Interactivity
+      $('#' + row + '_' + col).off('click');
+      $('#' + row + '_' + col).removeClass('hovered_over');
+      if(payload.game.currentTurn === myColor){
+        if(payload.game.legalMoves[row][col] === myColor.substr(0,1)){
           $('#' + row + '_' + col).addClass('hovered_over');
           $('#' + row + '_' + col).click(function(r, c) {
             return function() {
@@ -329,12 +332,9 @@ socket.on('game_update', function(payload) {
               socket.emit('play_token', payload);
             };
           }(row, col));
-        } //end if(board[row][col] == ' ')
-        else {
-          $('#' + row + '_' + col).removeClass('hovered_over');
-        }
+        }//end if legal moves === color
+      }//end if current turn = myColor
 
-      } //end old vs new compare
     } //End column for loop
   } //End row for loop
 

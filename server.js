@@ -621,6 +621,9 @@ function checkLineMatch(player, changedRow, changedCol, row, col, board) {
   if (board[row][col] === player) {
     return true;
   }
+  if (board[row][col] === ' ') {
+    return false;
+  }
   if ((newRow < 0) || (newRow > 7)) {
     return false;
   }
@@ -708,7 +711,7 @@ function calculateValidMoves(player, board) {
       }
     }
   }
-
+  return valid;
 } //end calculateValidMoves
 
 
