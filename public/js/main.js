@@ -361,7 +361,7 @@ socket.on('game_update', function(payload) {
   $('#whiteTotal').html(whiteTotal);
   $('#blackTotal').html(blackTotal);
 
-  old_board = board;
+  oldBoard = board;
 
 }); //end game_update
 
