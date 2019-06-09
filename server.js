@@ -585,10 +585,12 @@ io.sockets.on('connection', function(socket) {
     //Execute the move
     if (color == 'white') {
       game.board[row][col] = 'w';
+      flipBoard('w', row, col, game.board);
       game.currentTurn = 'black';
       game.legalMoves = calculateValidMoves('b', game.board);
     } else if (color == 'black') {
       game.board[row][col] = 'b';
+      flipBoard('b', row, col, game.board);
       game.currentTurn = 'white';
       game.legalMoves = calculateValidMoves('w', game.board);
     }
@@ -714,6 +716,51 @@ function calculateValidMoves(player, board) {
   return valid;
 } //end calculateValidMoves
 
+
+/////////////////////////
+// Flip Board function //
+/////////////////////////
+function flipBoard(player, row, col, board) {
+  flipLine(player, -1, -1, row, col, board);
+  flipLine(player, -1, 0, row, col, board);
+  flipLine(player, -1, 1, row, col, board);
+
+  flipLine(player, 0, 1, row, col, board);
+
+  flipLine(player, 1, 1, row, col, board);
+  flipLine(player, 1, 0, row, col, board);
+  flipLine(player, 1, -1, row, col, board);
+
+  flipLine(player, 0, -1, row, col, board);
+}
+
+////////////////////////
+// Flip Line function //
+////////////////////////
+function flipLine(player, changedRow, changedCol, row, col, board) {
+  var newRow = row + changedRow;
+  var newCol = col + changedCol;
+
+  if ((newRow < 0) || (newRow > 7)) {
+    return false;
+  }
+  if ((newCol < 0) || (newCol > 7)) {
+    return false;
+  }
+  if (board[newRow][newCol] === ' ') {
+    return false;
+  }
+  if (board[newRow][newCol] === player) {
+    return true;
+  } else {
+    if (flipLine(player, changedRow, changedCol, newRow, newCol, board)) {
+      board[newRow][newCol] = player;
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
 
 //////////////////////////////
 // Create new Game Function //
