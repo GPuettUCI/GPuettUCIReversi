@@ -869,19 +869,35 @@ function sendGameUpdate(socket, game_id, message) {
   // Check to see if game is over
   var row;
   var col;
+  var blackCount = 0;
+  var whiteCount = 0;
   var count = 0;
   for (row = 0; row < 8; row++) {
     for (col = 0; col < 8; col++) {
-      if (games[game_id].board[row][col] != ' ') {
+      if (games[game_id].legalMoves[row][col] != ' ') {
         count++;
+      } //end if
+      if (games[game_id].board[row][col] === 'b') {
+        blackCount++;
+      } //end if
+      if (games[game_id].board[row][col] === 'w') {
+        whiteCount++;
       } //end if
     } //End col for loop
   } //End row for loop
-  if (count == 64) {
+  console.log('Legal move count: ' + count);
+  if (count == 0) {
+    var winner = 'tie';
+    if(blackCount > whiteCount){
+      winner = 'black'
+    }
+    if(whiteCount > blackCount){
+      winner = 'white'
+    }
     var successData = {
       result: 'success',
       game: games[game_id],
-      whoWon: 'everyone',
+      whoWon: winner,
       game_id: game_id
     };
 

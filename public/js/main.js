@@ -245,6 +245,8 @@ var oldBoard = [
 ]
 
 var myColor = ' ';
+var intervalTimer;
+
 socket.on('game_update', function(payload) {
   console.log('*** Client Log Message: game_update: payload: ' + JSON.stringify(payload));
 
@@ -277,6 +279,24 @@ socket.on('game_update', function(payload) {
   }
   $('#my_color').html('<h3 id="my_color">I am ' + myColor + '</h3>');
   $('#my_color').append('<h4>' + payload.game.currentTurn + '\'s turn</h4>')
+  $('#my_color').append('<h4>Time: <span id = "timer"></span></h4>')
+
+  clearInterval(intervalTimer);
+  intervalTimer = setInterval(function(lastTime) {
+    return function() {
+      //update ui
+      var date = new Date();
+      var passedTime = date.getTime() - lastTime;
+      var min = Math.floor(passedTime / (60 * 1000));
+      var sec = Math.floor((passedTime % (60 * 1000)) / 1000);
+      if (sec < 10) {
+        $('#timer').html(min + ':0' + sec)
+      } else {
+        $('#timer').html(min + ':' + sec)
+      }
+
+    }
+  }(payload.game.lastMoveTime), 1000);
 
   //Animate changes to board.
   var whiteTotal = 0;
@@ -319,8 +339,8 @@ socket.on('game_update', function(payload) {
       //Interactivity
       $('#' + row + '_' + col).off('click');
       $('#' + row + '_' + col).removeClass('hovered_over');
-      if(payload.game.currentTurn === myColor){
-        if(payload.game.legalMoves[row][col] === myColor.substr(0,1)){
+      if (payload.game.currentTurn === myColor) {
+        if (payload.game.legalMoves[row][col] === myColor.substr(0, 1)) {
           $('#' + row + '_' + col).addClass('hovered_over');
           $('#' + row + '_' + col).click(function(r, c) {
             return function() {
@@ -332,8 +352,8 @@ socket.on('game_update', function(payload) {
               socket.emit('play_token', payload);
             };
           }(row, col));
-        }//end if legal moves === color
-      }//end if current turn = myColor
+        } //end if legal moves === color
+      } //end if current turn = myColor
 
     } //End column for loop
   } //End row for loop
