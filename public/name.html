@@ -14,11 +14,10 @@
   <script>
     function submitForm() {
       var username = $('#username').val();
-      if(username.length < 10){
-      window.location.href = 'lobby.html?username=' + username;
-      }
-      else{
-        alert("Please choose a username less than 10 characters")
+      if (username.length < 11) {
+        window.location.href = 'lobby.html?username=' + username;
+      } else {
+        alert("Please choose a username no longer than 10 characters")
       }
 
     }
