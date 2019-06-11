@@ -11,12 +11,21 @@
   <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>
 
   <title>Reversi Game</title>
+  <style>
+    .whiten {
+      border-radius: 5px;
+      background-color: white;
+    }
+  </style>
 </head>
 
 <body>
   <div class='container-fluid text-center'>
     <div class='row'>
-      <div class='offset-2 col text-center'>
+      <div class='col-2'>
+        <a href='index.html' class='btn btn-lg btn-info'>Home</a>
+      </div>
+      <div class='col-8 text-center'>
         <h3 id='my_color'></h3>
       </div>
       <div class='col-2'>
@@ -27,8 +36,8 @@
     <div class='row'>
       <div class='col'>
         <span class='align-middle' id='whiteTotal'></span>
-        <img src='assets/images/emptyToWhite.gif' alt='white score' />
-        <img src='assets/images/emptyToBlack.gif' alt='black score' />
+        <img src='assets/images/3dWhite.png' alt='white score' />
+        <img src='assets/images/3dBlack.png' alt='black score' />
         <span class='align-middle' id='blackTotal'></span>
       </div>
     </div>
@@ -123,29 +132,28 @@
         </table>
       </div>
     </div>
-
-    <div class='row'>
-      <div class='col text-left'>
-        <h3>Messages</h3>
-        <form class='form-inline' onsubmit='sendMessage(); return false;'>
-          <label for='send_message_holder' class='col-form-label sr-only'>Enter your chat message</label>
-          <input class='form-control mx-auto w-75' type='text' value='' id='send_message_holder' placeholder='Enter your chat message' autocomplete='off' />
-          <button type='submit' class='btn btn-default btn-primary'>Send</button>
-        </form>
-      </div>
+    <div class = 'row h-50'>
+      <div class = 'col w-100 my-2'></div>
     </div>
-    <div class='row'>
-      <div class='col text-left'>
-        <div id='messages'>
+
+    <div class='container whiten'>
+      <div class='row'>
+        <div class='col'>
+          <h3>Messages</h3>
+          <form class='form-inline' onsubmit='sendMessage(); return false;'>
+            <label for='send_message_holder' class='col-form-label sr-only'>Enter your chat message</label>
+            <input class='form-control mx-auto w-75' type='text' value='' id='send_message_holder' placeholder='Enter your chat message' autocomplete='off' />
+            <button type='submit' class='btn btn-default btn-primary'>Send</button>
+          </form>
+        </div>
+      </div>
+      <div class='row'>
+        <div class='col text-left'>
+          <div class='whiten' id='messages'>
+          </div>
         </div>
       </div>
     </div>
-    <div class='row'>
-      <div class='col'>
-        <a href='index.html' class='btn btn-lg btn-info'>Home</a>
-      </div>
-    </div>
-
   </div>
 
   <!-- Optional JavaScript -->

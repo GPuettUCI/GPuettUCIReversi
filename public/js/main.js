@@ -57,10 +57,10 @@ socket.on('join_room_response', function(payload) {
 
     node1.addClass('w-100');
 
-    node2.addClass('col-9 text-right')
-    node2.append('<h4><b>' + payload.username + '</b></h4>')
+    node2.addClass('col-6 text-right')
+    node2.append('<b><font size = "5">' + payload.username + '</font></b>')
 
-    node3.addClass('col-3 text-left')
+    node3.addClass('col-6 text-left')
     var button3 = makeInviteButton(payload.socket_id);
     node3.append(button3);
 
@@ -82,11 +82,13 @@ socket.on('join_room_response', function(payload) {
 
 
   // New player Join Message
-  var newHTML = '<p><b>' + payload.username + '</b> has entered the room</p>';
+  var newHTML = '<p><b>' + payload.username + '</b> has joined</p>';
   var newNode = $(newHTML);
   newNode.hide();
   $('#messages').prepend(newNode);
   newNode.slideDown(1000);
+  newNode.delay(60000);
+  newNode.fadeOut(1000);
 });
 
 /////////////////////////
@@ -228,6 +230,8 @@ socket.on('send_message_response', function(payload) {
   newNode.hide()
   $('#messages').prepend(newNode);
   newNode.slideDown(1000);
+  newNode.delay(60000);
+  newNode.fadeOut(1000);
 }); //End Send Message Response
 
 
@@ -337,7 +341,7 @@ socket.on('game_update', function(payload) {
         } //end inner if/else chain
       } //end old vs new compare
       gifReloader++;
-      
+
       //Interactivity
       $('#' + row + '_' + col).off('click');
       $('#' + row + '_' + col).removeClass('hovered_over');
@@ -360,8 +364,8 @@ socket.on('game_update', function(payload) {
     } //End column for loop
   } //End row for loop
 
-  $('#whiteTotal').html(whiteTotal);
-  $('#blackTotal').html(blackTotal);
+  $('#whiteTotal').html('<font size = "5">' + whiteTotal + '</font>');
+  $('#blackTotal').html('<font size = "5">' + blackTotal + '</font>');
 
   oldBoard = board;
 
