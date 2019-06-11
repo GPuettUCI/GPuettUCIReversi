@@ -117,6 +117,8 @@ socket.on('player_disonnected', function(payload) {
   newNode.hide();
   $('#messages').append(newNode);
   newNode.slideDown(1000);
+  newNode.delay(60000);
+  newNode.fadeOut(1000);
 });
 
 
