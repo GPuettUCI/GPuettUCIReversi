@@ -23,6 +23,7 @@ if (typeof username == 'undefined' || !username) {
 //////////////////////////////////
 var socket = io.connect();
 
+var gifReloader = 0;
 
 ////////////////////////
 // Server Log Message //
@@ -314,28 +315,29 @@ socket.on('game_update', function(payload) {
 
       if (oldBoard[row][col] != board[row][col]) {
         if (oldBoard[row][col] == '?' && board[row][col] == ' ') {
-          $('#' + row + '_' + col).html('<img src="assets/images/empty.gif" alt="Empty square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/empty.gif?' + gifReloader + '" alt="Empty square" />');
         } else if (oldBoard[row][col] == 'w' && board[row][col] == ' ') {
-          $('#' + row + '_' + col).html('<img src="assets/images/whiteToEmpty.gif" alt="Empty square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/whiteToEmpty.gif?' + gifReloader + '" alt="Empty square" />');
         } else if (oldBoard[row][col] == 'b' && board[row][col] == ' ') {
-          $('#' + row + '_' + col).html('<img src="assets/images/blackToEmpty.gif" alt="Empty square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/blackToEmpty.gif?' + gifReloader + '" alt="Empty square" />');
         } else if (oldBoard[row][col] == '?' && board[row][col] == 'w') {
-          $('#' + row + '_' + col).html('<img src="assets/images/emptyToWhite.gif" alt="White square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToWhite.gif?' + gifReloader + '" alt="White square" />');
         } else if (oldBoard[row][col] == ' ' && board[row][col] == 'w') {
-          $('#' + row + '_' + col).html('<img src="assets/images/emptyToWhite.gif" alt="White square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToWhite.gif?' + gifReloader + '" alt="White square" />');
         } else if (oldBoard[row][col] == 'b' && board[row][col] == 'w') {
-          $('#' + row + '_' + col).html('<img src="assets/images/blackToWhite.gif" alt="White square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/blackToWhite.gif?' + gifReloader + '" alt="White square" />');
         } else if (oldBoard[row][col] == '?' && board[row][col] == 'b') {
-          $('#' + row + '_' + col).html('<img src="assets/images/emptyToBlack.gif" alt="Black square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToBlack.gif?' + gifReloader + '" alt="Black square" />');
         } else if (oldBoard[row][col] == ' ' && board[row][col] == 'b') {
-          $('#' + row + '_' + col).html('<img src="assets/images/emptyToBlack.gif" alt="Black square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/emptyToBlack.gif?' + gifReloader + '" alt="Black square" />');
         } else if (oldBoard[row][col] == 'w' && board[row][col] == 'b') {
-          $('#' + row + '_' + col).html('<img src="assets/images/whiteToBlack.gif" alt="Black square" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/whiteToBlack.gif?' + gifReloader + '" alt="Black square" />');
         } else {
-          $('#' + row + '_' + col).html('<img src="assets/images/error.gif" alt="Error" />');
+          $('#' + row + '_' + col).html('<img src="assets/images/error.gif?' + gifReloader + '" alt="Error" />');
         } //end inner if/else chain
       } //end old vs new compare
-
+      gifReloader++;
+      
       //Interactivity
       $('#' + row + '_' + col).off('click');
       $('#' + row + '_' + col).removeClass('hovered_over');
