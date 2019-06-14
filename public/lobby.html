@@ -6,18 +6,10 @@
   <meta charset='utf-8'>
   <meta name='viewport' content='width=device-width, initial-scale=1, shrink-to-fit=no'>
 
-  <style>
-    body {
-      background-image: url('assets/images/gameBackground.png');
-    }
-
-    .whiten {
-      border-radius: 5px;
-      background-color: white;
-    }
-  </style>
   <!-- Bootstrap CSS -->
   <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css' integrity='sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T' crossorigin='anonymous'>
+
+  <link rel='stylesheet' type='text/css' href='assets/css/styling.css' />
 
   <title>Reversi Game Lobby</title>
 </head>
@@ -26,10 +18,10 @@
   <div class='container-fluid text-center'>
     <div class='row' id='headerRow'>
       <div class='col-1'>
-        <a href='index.html' class='btn btn-lg btn-info'>Home</a>
+        <a href='index.html' class='btn btn-lg homeButton'>Home</a>
       </div>
       <div class='col text-center'>
-        <h2>Lobby</h2>
+        <h2><b>Lobby</b></h2>
       </div>
       <div class='col-1'>
       </div>
@@ -39,8 +31,8 @@
         <div class='col border'>
           <div class='container'>
             <div class='row'>
-              <div class='col align-items-end'>
-                <h3>Players</h3>
+              <div class='col align-items-end' id='headerRow'>
+                <h3><b>Players</b></h3>
               </div>
             </div>
             <div class='container'>
@@ -52,16 +44,16 @@
         <div class='col border'>
           <div class='container'>
             <div class='row'>
-              <div class='col'>
-                <h3>Messages</h3>
+              <div class='col' id='headerRow'>
+                <h3><b>Messages</b></h3>
               </div>
             </div>
             <div class='row'>
               <div class='col text-left'>
                 <form class='form-inline' onsubmit='sendMessage(); return false;'>
-                  <label for='send_message_holder' class='col-form-label sr-only'>Enter your chat message</label>
-                  <input class='form-control mx-auto w-75' type='text' value='' id='send_message_holder' placeholder='Enter your chat message' autocomplete='off' />
-                  <button type='submit' class='btn btn-default btn-primary'>Send</button>
+                  <label for='send_message_holder' class='col-form-label sr-only'>Chat</label>
+                  <input class='form-control mx-auto w-75' type='text' value='' id='send_message_holder' placeholder='Chat' autocomplete='off' />
+                  <button type='submit' class='btn homeButton'>Send</button>
                 </form>
               </div>
             </div>

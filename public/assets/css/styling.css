@@ -1,0 +1,97 @@
+body {
+  background-image: url('../images/gameBackground.png');
+}
+
+.startButton {
+  color: #7CFCA2;
+  background-color: #187D36;
+  border-color: #22B14C;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  padding: 6px;
+}
+
+.startButton:hover {
+  background-color: #187D36;
+}
+
+.startButton:active {
+  position: relative;
+  top: 1px;
+}
+
+.generalButton {
+  color: #7CFCA2;
+  background-color: #5DBD7A;
+  border-color: #22B14C;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  padding:3px;
+}
+
+.generalButton:hover {
+  background-color: #187D36;
+}
+
+.startButton:active {
+  position: relative;
+  top: 1px;
+}
+
+.homeButton {
+  color: #22B14C;
+  background-color: #187D36;
+  border-color: #22B14C;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  padding: 1px;
+}
+
+.homeButton:hover {
+  background-color: #187D36;
+}
+
+.homeButton:active {
+  position: relative;
+  top: 1px;
+}
+
+.whiten {
+  border-radius: 5px;
+  background-color: white;
+  padding: 2px;
+}
+
+#headerRow {
+  font-family: "Courier New", monospace;
+  color: #000000;
+}
+
+input[type=text], select, textarea {
+  border-color: #22B14C;
+  font-family: "Courier New";
+}
+
+.outlineButton {
+  color: #22B14C;
+  border-color: #22B14C;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  padding: 3px;
+}
+
+.outlineButton2 {
+  color: #5DBD7A;
+  border-color: #7CFCA2;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  padding: 3px;
+}
+
+.quitButton{
+  color: #630100;
+  border-color: #630100;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  padding: 6px;
+}

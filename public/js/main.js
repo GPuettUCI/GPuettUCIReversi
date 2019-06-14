@@ -58,7 +58,7 @@ socket.on('join_room_response', function(payload) {
     node1.addClass('w-100');
 
     node2.addClass('col-6 text-right')
-    node2.append('<b><font size = "5">' + payload.username + '</font></b>')
+    node2.append('<font size="5" face="Courier New"><b>' + payload.username + '</b></font>')
 
     node3.addClass('col-6 text-left')
     var button3 = makeInviteButton(payload.socket_id);
@@ -82,7 +82,7 @@ socket.on('join_room_response', function(payload) {
 
 
   // New player Join Message
-  var newHTML = '<p><b>' + payload.username + '</b> has joined</p>';
+  var newHTML = '<p><font face="Courier New"><b>' + payload.username + '</b> has joined</font></p>';
   var newNode = $(newHTML);
   newNode.hide();
   $('#messages').prepend(newNode);
@@ -112,7 +112,7 @@ socket.on('player_disonnected', function(payload) {
 
 
   // Player leave Message
-  var newHTML = '<p><b>' + payload.username + '</b> disconnected</p>';
+  var newHTML = '<p><font face="Courier New"><b>' + payload.username + '</b> disconnected</font></p>';
   var newNode = $(newHTML);
   newNode.hide();
   $('#messages').append(newNode);
@@ -227,7 +227,7 @@ socket.on('send_message_response', function(payload) {
     alert(payload.message);
     return;
   }
-  var newHTML = '<p><b>' + payload.username + ':</b> ' + payload.message + '</p>';
+  var newHTML = '<p><font face="Courier New"><b>' + payload.username + ':</b> ' + payload.message + '</font></p>';
   var newNode = $(newHTML);
   newNode.hide()
   $('#messages').prepend(newNode);
@@ -284,9 +284,9 @@ socket.on('game_update', function(payload) {
     //Edge case catch. Return client to lobby.
     window.location.href = 'lobby.html?username=' + username;
   }
-  $('#my_color').html('<h3 id="my_color">I am ' + myColor + '</h3>');
-  $('#my_color').append('<h4>' + payload.game.currentTurn + '\'s turn</h4>')
-  $('#my_color').append('<h4>Time: <span id = "timer"></span></h4>')
+  $('#my_color').html('<h3 id="my_color"><font face="Courier New">I am ' + myColor + '</font></h3>');
+  $('#my_color').append('<h4><font face="Courier New">' + payload.game.currentTurn + '\'s turn</font></h4>')
+  $('#my_color').append('<h4><font face="Courier New">Time: <span id = "timer"></span></font></h4>')
 
   clearInterval(intervalTimer);
   intervalTimer = setInterval(function(lastTime) {
@@ -396,8 +396,8 @@ socket.on('game_over', function(payload) {
   }
 
   //Jump to a new page
-  $('#game_over').html('<h1>Game Over</h1><h2>' + payload.whoWon + ' wins</h2>');
-  $('#game_over').append('<a href="lobby.html?username=' + username + '" class = "btn btn-success btn-lg active" role = "button" aria-pressed = "true">Lobby</a>');
+  $('#game_over').html('<h1><font face="Courier New">Game Over</font></h1><h2><font face="Courier New">' + payload.whoWon + ' wins</font></h2>');
+  $('#game_over').append('<a href="lobby.html?username=' + username + '" class = "btn startButton" role = "button" aria-pressed = "true">Lobby</a>');
 }); //end game_over
 // END GAMEPLAY //
 
@@ -416,7 +416,7 @@ function sendMessage() {
 } //End sendMessage()
 
 function makeInviteButton(socket_id) {
-  var newHTML = '<button type= \'button\' class=\'btn btn-outline-primary\'>Invite</button>';
+  var newHTML = '<button type= \'button\' class=\'btn outlineButton\'>Invite</button>';
   var newNode = $(newHTML);
   newNode.click(function() {
     invite(socket_id);
@@ -425,7 +425,7 @@ function makeInviteButton(socket_id) {
 } //End makeInviteButton(socket_id)
 
 function makeInvitedButton(socket_id) {
-  var newHTML = '<button type= \'button\' class=\'btn btn-primary\'>Invited</button>';
+  var newHTML = '<button type= \'button\' class=\'btn outlineButton2\'>Invited</button>';
   var newNode = $(newHTML);
   newNode.click(function() {
     uninvite(socket_id);
@@ -434,7 +434,7 @@ function makeInvitedButton(socket_id) {
 } //End makeInvitedButton(socket_id)
 
 function makePlayButton(socket_id) {
-  var newHTML = '<button type= \'button\' class=\'btn btn-success\'>Play</button>';
+  var newHTML = '<button type= \'button\' class=\'btn generalButton\'>Play</button>';
   var newNode = $(newHTML);
   newNode.click(function() {
     gameStart(socket_id);
@@ -443,7 +443,7 @@ function makePlayButton(socket_id) {
 } //End makePlayButton(socket_id)
 
 function makeEngagedButton() {
-  var newHTML = '<button type= \'button\' class=\'btn btn-danger\'>Engaged</button>';
+  var newHTML = '<button type= \'button\' class=\'btn generalButton\'>Engaged</button>';
   var newNode = $(newHTML);
   return (newNode);
 } //End makeEngagedButton()
@@ -465,5 +465,5 @@ $(function() {
   console.log('*** Client Log Message: \'join room\' payload: ' + JSON.stringify(payload));
   socket.emit('join_room', payload);
 
-  $('#quit').append('<a href="lobby.html?username=' + username + '" class = "btn btn-danger btn-lg active" role = "button" aria-pressed = "true">Quit</a>');
+  $('#quit').append('<a href="lobby.html?username=' + username + '" class="btn quitButton btn-lg active" role="button" aria-pressed="true">Quit</a>');
 }); //end function()
